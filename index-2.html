@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+    <title>Transmissão para Chromecast</title>
+</head>
+<body>
+
+    <h1>Transmissão para Chromecast</h1>
+
+    <video id="video" width="640" height="360" controls>
+        <source src="seu_video.mp4" type="video/mp4">
+        Seu navegador não suporta o elemento de vídeo.
+    </video>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const video = document.getElementById('video');
+            const customButton = document.createElement('button');
+            customButton.innerText = 'Transmitir para Chromecast';
+            customButton.addEventListener('click', iniciarTransmissao);
+            
+            // Adiciona o botão personalizado aos controles do vídeo
+            video.controls = false; // Desativa os controles padrão para manipulação personalizada
+            const controlsContainer = document.createElement('div');
+            controlsContainer.className = 'custom-controls';
+            controlsContainer.appendChild(video);
+            controlsContainer.appendChild(customButton);
+            video.insertAdjacentElement('afterend', controlsContainer);
+
+            function iniciarTransmissao() {
+                const mediaInfo = new chrome.cast.media.MediaInfo(video.src, 'video/mp4');
+                
+                const request = new chrome.cast.media.LoadRequest(mediaInfo);
+                chrome.cast.requestSession(
+                    (session) => {
+                        session.loadMedia(request, onMediaDiscovered.bind(this, 'loadMedia'), onMediaError);
+                    },
+                    onLaunchError
+                );
+            }
+
+            function onMediaDiscovered(how, media) {
+                // Callback chamado quando o conteúdo do vídeo é descoberto no Chromecast
+                console.log('Conteúdo descoberto:', media);
+            }
+
+            function onMediaError(e) {
+                // Callback chamado em caso de erro no carregamento do conteúdo no Chromecast
+                console.error('Erro ao carregar conteúdo no Chromecast', e);
+            }
+
+            function onLaunchError() {
+                // Callback chamado em caso de erro ao iniciar uma sessão de transmissão
+                console.error('Erro ao iniciar a sessão de transmissão');
+            }
+        });
+    </script>
+</body>
+</html>
